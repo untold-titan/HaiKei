@@ -29,7 +29,62 @@ function loadDisqus() {
     }
 }
 
+const autoPlayEl = document.getElementById('auto-play-checkbx')
+const isEnabled = localStorage.getItem("autoPlay") || "disabled";
+if (isEnabled == "enabled") {
+    document.getElementById('auto-play-input-checkbx').checked = true;
+    autoPlayEl.classList.add("enabled")
+}
+autoPlayEl.addEventListener('click', (e) => {
+    autoPlayEl.classList.toggle("enabled")
+    if (autoPlayEl.classList.contains("enabled")) {
+        localStorage.setItem("autoPlay", "enabled")
+    } else {
+        localStorage.setItem("autoPlay", "disabled")
+    }
+})
 
+async function determineShakaLoaded() {
+    return new Promise((resolve) => {
+        let interval = setInterval(() => {
+            if (window.shaka) {
+                clearInterval(interval)
+                video.addEventListener("ended", () => {
+                    handleAutoPlay();
+                })
+                resolve()
+            }
+        }, 200)
+    })
+}
+determineShakaLoaded()
+
+function handleAutoPlay() {
+    if (localStorage.getItem("autoPlay") == "enabled") {
+        gotoNextEpisode()
+    }
+}
+
+function gotoNextEpisode() {
+    if (episode_play.id == totalEpisodes) return;
+    window.location.href = "/watch/" + movie.id + "/" + (parseInt(episode_play.id) + 1)
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function loadGenresList() {
+    $.get('/genres.json', function(res) {
+        genreList = res;
+        genres = genreList.genres[0]
+        for (let genre in genres) {
+            if (genre == "slice-of-life") genre = "slice of Life"
+            if (genre == "mahou-shoujo") genre = "mahou Shoujo"
+            console.log(capitalizeFirstLetter(genre)); // Log the genre name
+        }
+    });
+}
 
 function countViewMovie() {
     setTimeout(function() {
@@ -55,6 +110,7 @@ function pwToggleVisible() {
         pwInput.type = "password";
     }
 }
+
 
 
 // $(document).ready(function() {

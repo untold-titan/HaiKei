@@ -16,9 +16,7 @@
     <link rel="preconnect" href="https://site-assets.fontawesome.com">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="/css/index-redesign.css">
-    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.2.1/css/all.css">
     <link rel="stylesheet" href="/vendor/swiper.js/swiper-bundle.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izimodal/1.6.1/css/iziModal.css" integrity="sha512-uZ+G0SzK4GMUDUzxzbIeLGLjYgAhQ2KrIV4bWIP5o6URt5XVcn8S02eW6C1DH35bqq/XX1jYwlhhNPPIE1+q1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9870376562547077" crossorigin="anonymous"></script>
 </head>
 <body id="full-doc">
@@ -28,12 +26,16 @@
     <div class="swiper-wrapper">
         <% trendingAnime.forEach(card => { %>
             <div class="swiper-slide">
-                <div loading="lazy" class="background-image" style="background-image: url('<%- card.image %>')"></div>
+                <div loading="lazy" class="background-image" style="background-image: url('<%- `https://img.haikei.xyz/image/` + encodeURIComponent(card.image) %>')"></div>
                 <div class="show-info">
                     <h1 class="title hidden jp-title"><%- card.title.romaji %></h1>
                     <h1 class="title eng-title"><%- card.title.english %></h1>
                     <div class="description">
-                        <%- card.description.replace(/(Source:.*)/m, "").replace("(", "") %>
+                        <% if (card.description !== null) { %>
+                            <%- card.description.replace(/(Source:.*)/m, "").replace("(", "") %>
+                        <% } else { %>
+                            <%- card.description = "No description found!" %>
+                        <% } %>
                     </div>
                     <div class="emblem-info">
                         <% if (card.status == "Completed") { %>
@@ -46,7 +48,7 @@
                         <div class="type"><i class="fa-light fa-tv-retro"></i> <%- card.type %></div>
                     </div>
                     <div class="btn-wrapper">
-                        <div class="play-btn"><a href="/watch/<%- card.malId %>/1"><i class="fa-solid fa-play"></i> Play Now</a></div>
+                        <div class="play-btn"><a href="/watch/<%- card.id %>/1"><i class="fa-solid fa-play"></i> Play Now</a></div>
                     </div>
                 </div>
             </div>
@@ -62,8 +64,8 @@
         <div class="recent-releases-grid grid-container">
             <% recentReleases.forEach(card => { %>
                 <div class="splide__slide">
-                <a aria-label="<%- card.episodeId %>" class="searchLink" href="/watch/<%- card.malId %>/1"></a>
-                    <img loading="lazy" class="recent_releases_img" src="<%- card.image %>" alt="<%- card.title.romaji %>" style="width: 148px; height: 208px; align-self: center"> 
+                <a aria-label="<%- card.episodeId %>" class="searchLink" href="/watch/<%- card.id %>/1"></a>
+                    <img class="recent_releases_img" src="<%- `https://img.haikei.xyz/image/` + encodeURIComponent(card.image) %>" alt="<%- card.title.romaji %>" style="width: 153px; height: 218px; align-self: center"> 
                     <p class="splide__animeTitle recent_releases_title"><%- card.title.romaji %></p>
                     <p class="splide__episodeNum">Episode: <%- card.episodeNumber %></p>
                 </div>
@@ -78,10 +80,6 @@
     <ins class="adsbygoogle" style="display:block" data-ad-format="autorelaxed" data-ad-client="ca-pub-9870376562547077" data-ad-slot="7895320825"></ins>
 </div>
 <script>
-if (localStorage.getItem("_firstload") == undefined) {
-    localStorage.setItem("_noads", false)
-    localStorage.setItem("_firstload", false)
-}
 // ensure that ads only show on the main domains
 if (window.location.hostname == "haikei.xyz" || window.location.hostname == "www.haikei.xyz") {
     if (localStorage.getItem("_noads") == 'false') {
@@ -111,6 +109,7 @@ if (window.location.hostname == "haikei.xyz" || window.location.hostname == "www
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/8.4.5/swiper-bundle.min.js" integrity="sha512-wdUM0BxMyMC/Yem1RWDiIiXA6ssXMoxypihVEwxDc+ftznGeRu4s9Fmxl8PthpxOh5CQ0eqjqw1Q8ScgNA1moQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>   
 <script src="/js/index.js"></script>
 <script src="/js/modals.js"></script>
+<script src="/js/app.js"></script>
 <% if(loginState == true) { %>
 <script>
     let vidSource = localStorage.getItem('videoSource')

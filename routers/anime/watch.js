@@ -12,20 +12,32 @@ const zoro = new ANIME.Zoro();
 let redisClient;
 
 (async () => {
-  redisClient = redis.createClient();
+    redisClient = redis.createClient({
+        url: process.env.REDIS_URL,
+    });
 
   redisClient.on("error", (error) => console.error(`Error : ${error}`));
 
   await redisClient.connect();
 })();
 async function handleMalformedURL(req, res) {
-    res.redirect(`/watch/${req.params.id}/1`)
+    if (isNaN(req.params.id)) {
+        return res.send("ID is not a number!")
+    }
+    try {
+        return res.redirect(`/watch/${req.params.id}/1`)
+    } catch {
+        return res.send("Malformed URL!")
+    }
+
 }
 async function getTrending() {
     try {
         let trending = await axios.get(`${consumetURL}meta/anilist/trending`)
-        let trendingData = await trending.data
-        return trendingData
+        if (trending.status == 200) {
+            let trendingData = await trending.data
+            return trendingData
+        }
     } catch(e) {
         console.log(e)
     }
@@ -33,7 +45,7 @@ async function getTrending() {
 }
 async function getShowInfo(showID) {
     try {
-        let showInfo = await axios.get(`https://api.consumet.org/meta/mal/info/${showID}`)
+        let showInfo = await axios.get(`https://api.consumet.org/meta/anilist/info/${showID}`)
         let showData = await showInfo.data
         return showData
     } catch(e) {
@@ -89,12 +101,10 @@ async function getSources(ID) {
             // });
         }
         if (animepaheData !== undefined) { 
-            // availableSources.push("Animepahe")
-            // Object.getOwnPropertyNames(animepaheData).forEach(function (val, idx, array) {
-            //     showIds.sources.push({"data": animepaheData[val].identifier, "source": "Animepahe"})
-            // });
-
-            // Kill animepahe as a source... for now ;)
+            availableSources.push("Animepahe")
+            Object.getOwnPropertyNames(animepaheData).forEach(function (val, idx, array) {
+                showIds.sources.push({"data": animepaheData[val].identifier, "source": "Animepahe"})
+            });
         }
         // if (nineanimeData !== undefined) {
         //     availableSources.push("9anime") // do nothing because 9anime cannot be used as a source quite yet. :(
@@ -117,18 +127,12 @@ async function getWatchData(req, res) {
     let showInfo;
 
     try {
+        if (isNaN(req.params.id)) {
+            return res.send("ID is not a number!")
+        }
         const watchResults = await redisClient.get(watch_dblink);
         const trendingResults = await redisClient.get(trending_dblink);
         const showInfoResults = await redisClient.get(info_dblink);
-        if (watchResults) {
-            sources = JSON.parse(watchResults)
-        } else {
-            sources = await getSources(req.params.id)
-            await redisClient.set(watch_dblink, JSON.stringify(sources), {
-                EX: 5400,
-                NX: true,
-            });
-        }
         if (trendingResults) {
             trending = JSON.parse(trendingResults)
         } else {
@@ -146,9 +150,15 @@ async function getWatchData(req, res) {
                 EX: 32400,
                 NX: true,
             });
-            if (showInfo.genres[0] == undefined) {
-                recommendedGenre = "Action" // fallback to action shows if genre is undefined (somehow)
-            }
+        }
+        if (watchResults) {
+            sources = JSON.parse(watchResults)
+        } else {
+            sources = await getSources(showInfo.malId)
+            await redisClient.set(watch_dblink, JSON.stringify(sources), {
+                EX: 5400,
+                NX: true,
+            });
         }
         const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
         let showID = req.params.id

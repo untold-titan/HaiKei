@@ -38,6 +38,9 @@
         'disqus': 'haikei.disqus.com',
     };
     </script>
+    <script>
+        let totalEpisodes = `<%- showInfo.totalEpisodes %>`
+    </script>
     <%# I am going to genuinely skin someone if I ever have to do this again %>
     <% let watchlistObj = {}; %>
     <% watchlistObj["id"] = showInfo.id %>
@@ -49,46 +52,13 @@
     <% watchlistObj["subOrDub"] = showInfo.subOrDub %>
     <% watchlistObj["status"] = showInfo.status %>
     <% let stringifiedWatchlistObj = JSON.stringify(watchlistObj) %>
-    
     <%# now I just have to pass it down to the browser *ensue clown music* %>
     <script>
         let watchlistObject = '<%- stringifiedWatchlistObj %>'
         let ep = "<%- episode %>"
     </script>
 </head>
-<%#
-async function getQuality() {
-    try {
-        streamSource = data.sources.find(x => x.quality === 'default')
-    } catch {
-        try {
-            if (streamSource == undefined) {
-                streamSource = data.sources.find(x => x.quality === '720p')
-            }
-        } catch {
-            if (streamSource == undefined) {
-                streamSource = data.sources.find(x => x.quality === 'backup')
-            }
-        }
-    }
-}
-getQuality();
-
-
-    let hdCheck = data.sources.find(x => x.quality === '720p')
-    let hdChecker;
-    hdChecker = "PASS"
-        if (hdCheck == undefined) {
-        hdCheck = data.sources.find(x => x.quality === '480p')
-        hdChecker = "FAIL" 
-        }
-        if (hdCheck == undefined) {
-        hdCheck = data.sources.find(x => x.quality === '360p')     
-            hdChecker = "FAIL" 
-        }
- %>
 <body data-page="movie_watch">
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PY3MLQPLY1"></script>
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -349,10 +319,17 @@ getQuality();
             <div id="main-wrapper" date-page="movie_watch" data-id="">
                 <div id="ani_detail">
                     <div class="ani_detail-stage">
-                        <div class="container">                            <div class="anis-cover-wrap">
+                        <div class="container">                            
+                            <div class="anis-cover-wrap">
+                                <% if (showInfo.cover == undefined) { %>
                                 <div class="anis-cover"
                                     style="background-image: url('<%- showInfo.image %>')">
                                 </div>
+                                <% } else { %>
+                                    <div class="anis-cover"
+                                    style="background-image: url('<%- showInfo.cover %>')">
+                                </div>
+                                <% } %>
                             </div>
                             <div class="anis-watch-wrap">
                                 <div class="prebreadcrumb">
@@ -406,8 +383,14 @@ getQuality();
                                             
                                         </div>
                                             <div class="pc-item pc-toggle pc-light">
-                                                <div id="turn-off-light" class="toggle-basic">
-
+                                                <div id="auto-play-toggler" class="toggle-basic off">
+                                                    <div class="auto-play">
+                                                        <label class="checkbox-container">
+                                                            <input id="auto-play-input-checkbx" type="checkbox">
+                                                            <span id="auto-play-checkbx" class="checkmark"></span>
+                                                          </label>
+                                                        <span>Auto Play</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="pc-right">
@@ -422,7 +405,7 @@ getQuality();
                                                 <%    nextOrPrev = "Next";
                                                     hrefToUse = nextEp; %>
                                                 <% } %>
-                                                <a href="<%- id %>-episode-<%- hrefToUse %>">
+                                                <a href="<%- hrefToUse %>">
                                                 <button class="btn btn-secondary" type="button" style="float:right;height: 32px; margin-top: 3px;font-size: 14px;font-weight: normal;display: block;">
                                                 <% if (nextOrPrev == "Prev") { %>
                                                     <i class="fa-solid fa-backward-step"></i>
@@ -556,7 +539,7 @@ getQuality();
                                                 <span class="item">NO RATING</span>
                                                 <span class="dot"></span>
                                                 <% } else { %>
-                                                <span class="item">★ <%- Math.round(showInfo.rating *2)/2; %> / 10</span>
+                                                <span class="item">★ <%- Math.round(showInfo.rating *2)/2 / 10; %> / 10</span>
                                                 <span class="dot"></span>
                                                 <% } %>
                                                 <span class="item"><%-showInfo.status.toUpperCase() %></span>
@@ -591,11 +574,6 @@ getQuality();
                                 <div class="float-left bah-heading mr-4">
                                     <h2 class="cat-heading">Comments</h2>
                                 </div>
-                                <div class="float-left bah-setting">
-                                    <a data-type="episode"
-                                        class="btn btn-sm btn-radius btn-tab btn-comment-tab active mr-1">Episode <span
-                                            id="cm-episode-number"></span></a>
-                                </div>
                                 <div class="clearfix"></div>
                             </div>
                             <div class="tab-content">
@@ -625,41 +603,42 @@ getQuality();
                                 </div>
                                 <div class="clearfix"></div>
                             </div>
-                            <div class="tab-content">
+                            <!-- <div class="tab-content">
                                 <div class="block_area-content block_area-list film_list film_list-grid film_list-wfeature">
                                     <div class="film_list-wrap">
-                                    <% recommended.results.forEach((rec) => { %>
+                                    <%# recommended.results.forEach((rec) => { %>
                                         <div class="flw-item ">
                                             <div class="film-poster">
                                                 <div class="tick rtl">
                                                     <div class="tick-item tick-eps amp-algn">EP
-                                                        <%- rec.totalEpisodes %></div>
+                                                        <%#- rec.totalEpisodes %></div>
                                                 </div>
                                                 <img class="film-poster-img lazyload"
-                                                    data-src="<%- rec.image %>"
-                                                    src="<%- rec.image %>"
-                                                    alt="<%- rec.title.romaji %>">
-                                                <a class="film-poster-ahref" href="/watch/<%-rec.id %>-episode-1"
-                                                    title="<% rec.title.romaji %>"><i class="fas fa-play"></i></a>
+                                                    data-src="<%#- rec.image %>"
+                                                    src="<%#- rec.image %>"
+                                                    alt="<%#- rec.title.romaji %>">
+                                                <a class="film-poster-ahref" href="/watch/<%#-rec.id %>/1"
+                                                    title="<%# rec.title.romaji %>"><i class="fas fa-play"></i></a>
                                             </div>
                                             <div class="film-detail">
                                                 <h3 class="film-name">
-                                                    <a class="dynamic-name" href="/watch/<%- rec.id %>-episode-1"
-                                                        title="<%- rec.title.romaji %>" data-jname="<%- rec.title.romaji %>" style="opacity: 1;"><%- rec.title.romaji %></a>
+                                                    <a class="dynamic-name" href="/watch/<%#- rec.id %>/1"
+                                                        title="<%#- rec.title.romaji %>" data-jname="<%#- rec.title.romaji %>" style="opacity: 1;"><%#- rec.title.romaji %></a>
                                                 </h3>
                                                 <div class="fd-infor">
-                                                    <span class="fdi-item"><%- rec.type %></span>
+                                                    <span class="fdi-item"><%#- rec.type %></span>
                                                     <span class="dot"></span>
-                                                    <span class="fdi-item"><%- rec.status %></span>
+                                                    <span class="fdi-item"><%#- rec.status %></span>
                                                 </div>
                                             </div>
                                             <div class="clearfix"></div>
                                         </div>
-                                    <% }) %>
+                                    <%# }) %>
                                         </div>
                                     <div class="clearfix"></div>
                                 </div>
-                            </div>
+                            </div> -->
+                            <h3>Currently Disabled!</h3>
                         </section>
 
                         <div class="clearfix"></div>
@@ -678,84 +657,43 @@ getQuality();
                             <div class="cbox cbox-list cbox-realtime">
                                 <div class="cbox-content">
                                     <div class="tab-content">
-<div id="trending" class="anif-block-ul anif-block-chart tab-pane active">
+                                        <div id="trending" class="anif-block-ul anif-block-chart tab-pane active">
                                             <ul class="ulclear">
-                                            <% let trendingIndex = 1 %>
-                                            <% trending.results.forEach((ti) => { %>
-                                            <li class="item-top">
-                                              <div class="film-number"><span><%- trendingIndex %></span></div>
-                                                    <div class="film-poster">
-                                                        <img data-src="<%- ti.image %>" class="film-poster-img lazyload" alt="<%- ti.title.romaji %>" src="<%- ti.image %>">
-                                                    </div>
-                                                    <div class="film-detail">
-                                                        <h3 class="film-name">
-														<a href="/watch/<%-ti.id %>-episode-1" title="<%- ti.title.romaji %>" class="dynamic-name" data-jname="<%- ti.title.romaji %>"><%- ti.title.romaji %></a>
-														</h3>
-														<div class="fd-infor">
-														<span class="fdi-item">
-														<i class="fa fa-tv"></i> Spring 2022  </span> <span class="dot"></span> <span class="fdi-item"><i class="fas fa-calendar mr-1"></i> 2022</span> <span class="dot"></span> <span class="fdi-item"><i class="fas fa-play-circle mr-1"></i> EP 12</span>
+                                                <% let trendingIndex = 1 %>
+                                                <% trending.results.forEach((ti) => { %>
+                                                <li class="item-top">
+                                                    <div class="film-number"><span><%- trendingIndex %></span></div>
+                                                        <div class="film-poster">
+                                                            <img data-src="<%- ti.image %>" class="film-poster-img lazyload" alt="<%- ti.title.romaji %>" src="<%- ti.image %>">
                                                         </div>
-                                                    </div>
-                                                <div class="clearfix"></div>
-                                            </li>
-                                            <% trendingIndex++ %>	          
-                                            <% }) %>
-                                        </ul>
+                                                            <div class="film-detail">
+                                                                <h3 class="film-name">
+                                                                <a href="/watch/<%-ti.id %>" title="<%- ti.title.romaji %>" class="dynamic-name" data-jname="<%- ti.title.romaji %>"><%- ti.title.romaji %></a>
+                                                                </h3>
+                                                                <div class="fd-infor">
+                                                                <span class="fdi-item">
+                                                                <i class="fa fa-tv"></i> Spring 2022  </span> <span class="dot"></span> <span class="fdi-item"><i class="fas fa-calendar mr-1"></i> <%- ti.releaseDate %></span> <span class="dot"></span> <span class="fdi-item"><i class="fas fa-play-circle mr-1"></i> EP <%- ti.totalEpisodes %></span>
+                                                                </div>
+                                                            </div>
+                                                        <div class="clearfix"></div>
+                                                    </li>
+                                                <% trendingIndex++ %>	          
+                                                <% }) %>
+                                            </ul>
                                         </div>
-                    </section>
-					
-                        <section class="block_area block_area_sidebar block_area-genres">
-                        <div class="block_area-header">
-                            <div class="float-left bah-heading mr-4">
-                                <h2 class="cat-heading">Genres</h2>
-                            </div>
-                            <div class="clearfix"></div>
-                        </div>
-                        <div class="block_area-content">
-                            <div class="cbox cbox-genres">
-                                <ul class="ulclear color-list sb-genre-list sb-genre-less">
-                                    <li class="nav-item"> <a class="nav-link" href="../genres?sort_genre=Action" title="Action">Action</a> </li>
-<li> <a href="../genres?sort_genre=Adventure" title="Adventure">Adventure</a> </li>
-<li> <a href="../genres?sort_genre=Cars" title="Cars">Cars</a> </li>
-<li> <a href="../genres?sort_genre=Comedy" title="Comedy">Comedy</a> </li>
-<li> <a href="../genres?sort_genre=Dementia" title="Dementia">Dementia</a> </li>
-<li> <a href="../genres?sort_genre=Demons" title="Demons">Demons</a> </li>
-<li> <a href="../genres?sort_genre=Drama" title="Drama">Drama</a> </li>
-<li> <a href="../genres?sort_genre=Ecchi" title="Ecchi">Ecchi</a> </li>
-<li> <a href="../genres?sort_genre=Fantasy" title="Fantasy">Fantasy</a> </li>
-<li> <a href="../genres?sort_genre=Game" title="Game">Game</a> </li>
-<li> <a href="../genres?sort_genre=Harem" title="Harem">Harem</a> </li>
-<li> <a href="../genres?sort_genre=Historical" title="Historical">Historical</a> </li>
-<li> <a href="../genres?sort_genre=Horror" title="Horror">Horror</a> </li>
-<li> <a href="../genres?sort_genre=Josei" title="Josei">Josei</a> </li>
-<li> <a href="../genres?sort_genre=Kids" title="Kids">Kids</a> </li>
-<li> <a href="../genres?sort_genre=Magic" title="Magic">Magic</a> </li>
-<li> <a href="../genres?sort_genre=Martial Arts" title="Martial Arts">Martial Arts</a> </li>
-<li> <a href="../genres?sort_genre=Mecha" title="Mecha">Mecha</a> </li>
-<li> <a href="../genres?sort_genre=Military" title="Military">Military</a> </li>
-<li> <a href="../genres?sort_genre=Music" title="Music">Music</a> </li>
-<li> <a href="../genres?sort_genre=Mystery" title="Mystery">Mystery</a> </li>
-<li> <a href="../genres?sort_genre=Parody" title="Parody">Parody</a> </li>
-<li> <a href="../genres?sort_genre=Police" title="Police">Police</a> </li>
-<li> <a href="../genres?sort_genre=Psychological" title="Psychological">Psychological</a> </li>
-<li> <a href="../genres?sort_genre=Romance" title="Romance">Romance</a> </li>
-<li> <a href="../genres?sort_genre=Samurai" title="Samurai">Samurai</a> </li>
-<li> <a href="../genres?sort_genre=School" title="School">School</a> </li>
-<li> <a href="../genres?sort_genre=Sci-Fi" title="Sci Fi">Sci Fi</a> </li>
-<li> <a href="../genres?sort_genre=Seinen" title="Seinen">Seinen</a> </li>
-<li> <a href="../genres?sort_genre=Shoujo" title="Shoujo">Shoujo</a> </li>
-<li> <a href="../genres?sort_genre=Shoujo Ai" title="Shoujo Ai">Shoujo Ai</a> </li>
-<li> <a href="../genres?sort_genre=Shounen" title="Shounen">Shounen</a> </li>
-<li> <a href="../genres?sort_genre=Shounen Ai" title="Shounen Ai">Shounen Ai</a> </li>
-<li> <a href="../genres?sort_genre=Slice of Life" title="Slice of Life">Slice of Life</a> </li>
-<li> <a href="../genres?sort_genre=Space" title="Space">Space</a> </li>
-<li> <a href="../genres?sort_genre=Sports" title="Sports">Sports</a> </li>
-<li> <a href="../genres?sort_genre=Super Power" title="Super Power">Super Power</a> </li>
-<li> <a href="../genres?sort_genre=Supernatural" title="Supernatural">Supernatural</a> </li>
-<li> <a href="../genres?sort_genre=Thriller" title="Thriller">Thriller</a> </li>
-<li> <a href="../genres?sort_genre=Vampire" title="Vampire">Vampire</a> </li>
-<li> <a href="../genres?sort_genre=Yaoi" title="Yaoi">Yaoi</a> </li>
-<li> <a href="../genres?sort_genre=Yuri" title="Yuri">Yuri</a> </li>  
+                                    </section>
+<section class="block_area block_area_sidebar block_area-genres">
+<div class="block_area-header">
+    <div class="float-left bah-heading mr-4">
+        <h2 class="cat-heading">Genres</h2>
+    </div>
+    <div class="clearfix"></div>
+</div>
+<div class="block_area-content">
+    <div class="cbox cbox-genres">
+        <ul class="ulclear color-list sb-genre-list sb-genre-less">
+            <li class="nav-item"><a class="nav-link" href="/genre?sort=Action" title="Action">Action</a></li>
+            <li class="nav-item"><a class="nav-link" href="/genre?sort=Action" title="Action">Action</a></li>
 							  </ul>
                                 <div class="anime-info">
                                     <a href="<%- id %>"></a>
@@ -794,7 +732,7 @@ getQuality();
                 </script>
             <% } %>
             <br>
-            <div id="footer" data-settings='{"auto_play":1,"auto_next":1,"auto_load_comments":0,"enable_dub":0,"anime_name":"jp","play_original_audio":0}'>
+            <div id="footer">
                 <div id="footer-about">
                     <div class="container">
                         <div class="footer-top">
@@ -817,10 +755,8 @@ getQuality();
                             
                         <div class="clearfix"></div>
                     </div>
-                    <div class="about-text">HaiKei does not store any files on our server, we
-                                only share link to the media which is hosted on 3rd party services.</div>
-                            <p class="copyright">Copyright © 2022 HaiKei. All Rights
-                                Reserved</p>
+                    <div class="about-text">HaiKei does not store any files on our server, we only share links to the media which is hosted on 3rd party services.</div>
+                            <p class="copyright">Copyright © 2022 HaiKei. All Rights Reserved</p>
                         </div>
                     </div>
                 </div>
@@ -848,7 +784,6 @@ getQuality();
                             <br>
                             <form method="POST" action="/logout">
                                 <button type="submit" class="btn btn-block btn-logout">Logout</button>
-                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <input type="hidden" name="returnURL" value="<%= url %>">
                             </form>
                               
@@ -960,7 +895,6 @@ getQuality();
                                         <label class="prelabel" for="password">Password</label>
                                         <input type="password" class="form-control" id="password" placeholder="Password"
                                             name="password" required>
-                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                         <input type="hidden" name="returnURL" value="<%= url %>">
                                     </div>
                                     <div class="form-check custom-control custom-checkbox">
@@ -1072,22 +1006,20 @@ getQuality();
                 </div>
             </div>
         </div>
-
-                
-
-                <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-                <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
-                <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
-                <script type="text/javascript" src="/js/af/app.min.js"></script>
-                <script type="text/javascript" src="/js/af/common.js"></script>
-                <script type="text/javascript" src="/js/af/movie.js"></script>
-                <script type="text/javascript" src="/js/af/search_list.js"></script>
-                <script src="/js/af/sources.js"></script>
-                <script src="/js/af/random.js"></script>
-                <script src="https://github.com/videojs/mux.js/releases/latest/download/mux.js"></script> 
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.0/shaka-player.compiled.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <script src="/js/shaka-player-ui.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <script src="/js/jquery_debounce.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+<script type="text/javascript" src="/js/af/app.min.js"></script>
+<script type="text/javascript" src="/js/af/common.js"></script>
+<script type="text/javascript" src="/js/af/movie.js"></script>
+<script type="text/javascript" src="/js/af/search_list.js"></script>
+<script src="/js/af/sources.js"></script>
+<script src="/js/af/random.js"></script>
+<script src="https://github.com/videojs/mux.js/releases/latest/download/mux.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.0/shaka-player.compiled.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/shaka-player-ui.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/jquery_debounce.js"></script>
+<script src="/js/app.js"></script>
 <script>
 // Use shaka.ui.Element as a base class
 const video = document.getElementById('youtube-theme');
@@ -1208,7 +1140,7 @@ document.addEventListener('shaka-ui-loaded', init);
 <script>
 document.getElementById('add-to-watchlist').addEventListener('click', addToWatchlist)
 function addToWatchlist() {
-    $.post("https://haikei.xyz/api/watchlist/add", { data: watchlistObject, _csrf: "<%- csrfToken %>" })
+    $.post("https://haikei.xyz/api/watchlist/add", { data: watchlistObject })
 }
 </script>
 <% } %>

@@ -11,7 +11,9 @@ const anilist = new META.Anilist();
 let redisClient;
 
 (async () => {
-  redisClient = redis.createClient();
+  redisClient = redis.createClient({
+    url: process.env.REDIS_URL,
+  });
 
   redisClient.on("error", (error) => console.error(`Error : ${error}`));
 
@@ -64,12 +66,12 @@ try {
 
     } catch(e) {
         console.log(e);
-        return res.status(404).render('error.ejs', {loginState: loginState, errCode: "Failed to fetch trending anime!"})
+        return res.status(404).render('error.ejs', {loginState: false, errCode: "Failed to fetch trending anime!"})
     }
  })
 
  app.get('/anime/:id', async (req, res) => {
-    res.redirect('/watch/' + req.params.id + '-episode-1')
+    res.redirect('/watch/' + req.params.id)
  })
 
  app.get('/donate', async (req, res) => {

@@ -6,34 +6,42 @@ async function loadZoroSource(source) {
     let url2 = await fetch("https://api.haikei.xyz/anime/zoro/watch?episodeId=" + zoroEpId)
     zoroData2 = await url2.json()
     streamSource = zoroData2.sources.find(x => x.quality === 'auto')
-    // load in the url, but add a cors proxy to it
     player.unload()
-    player.load("https://cors.haikei.xyz/" + streamSource.url)
-    setTimeout(() => {
-        let subtitles = zoroData2.subtitles;
-        let subtitleForm;
-        subtitles.forEach((track) => {
-        if (track.lang == "English") {
-            subtitleForm = "en"
-        } else if (track.lang == "Arabic - العربية (Arabic)") {
-            subtitleForm = "ar"
-        } else if (track.lang == "French") {
-            subtitleForm = "fr"
-        } else if (track.lang == "Portuguese - Português (Brasil)") {
-            subtitleForm = "pt"
-        } else if (track.lang == "Spanish - Español (España)") {
-            subtitleForm = "es"
-        } else if (track.lang == "Russian - Русский (Russian)") {
-            subtitleForm = "ru"
-        } else if (track.lang == "German - Deutsch") {
-            subtitleForm = "de"
-        } else if (track.lang == "Italian - Italiano (Italian)") {
-            subtitleForm = "it"
+    player.load("https://hls.haikei.xyz/" + streamSource.url)
+    video.addEventListener('loadeddata', (e) => {
+        if (navigator.userAgent.includes("iPhone")) {
+            loadSubsZoro();
+        } else {
+            if (video.readyState >= 3) {
+                loadSubsZoro();
+            }
         }
-        
-        player.addTextTrackAsync(track.url, subtitleForm, 'subtitle', 'text/vtt', '', track.lang)
-        }); 
-    }, 500);
+     });
+}
+async function loadSubsZoro() {
+    let subtitles = zoroData2.subtitles;
+    let subtitleForm;
+    subtitles.forEach((track) => {
+    if (track.lang == "English") {
+        subtitleForm = "en"
+    } else if (track.lang == "Arabic - العربية (Arabic)") {
+        subtitleForm = "ar"
+    } else if (track.lang == "French") {
+        subtitleForm = "fr"
+    } else if (track.lang == "Portuguese - Português (Brasil)") {
+        subtitleForm = "pt"
+    } else if (track.lang == "Spanish - Español (España)") {
+        subtitleForm = "es"
+    } else if (track.lang == "Russian - Русский (Russian)") {
+        subtitleForm = "ru"
+    } else if (track.lang == "German - Deutsch") {
+        subtitleForm = "de"
+    } else if (track.lang == "Italian - Italiano (Italian)") {
+        subtitleForm = "it"
+    }
+    
+    player.addTextTrackAsync(track.url, subtitleForm, 'subtitle', 'text/vtt', '', track.lang)
+    }); 
 }
 async function defaultSourceLoad() {
     if (defaultSource == "gogoanime") {
@@ -41,7 +49,7 @@ async function defaultSourceLoad() {
         let url = await fetch("https://api.haikei.xyz/anime/gogoanime/watch/" + showID + '-episode-' + ep + "?server=vidstreaming")
         data = await url.json()
         streamSource = data.sources.find(x => x.quality === 'default')
-        player.load(streamSource.url)
+        player.load("https://hls.haikei.xyz/proxy/m3u8/" + encodeURIComponent(streamSource.url) + "?forcedHeadersProxy=%7B%22Content-Type%22%3A%22video%2FMP2T%22%7D");
     } else if (defaultSource == "zoro") {
         loadZoroSource(document.getElementById('zoro').value)
     } else {
@@ -49,12 +57,13 @@ async function defaultSourceLoad() {
         let url = await fetch("https://api.haikei.xyz/anime/gogoanime/watch/" + showID + '-episode-' + ep + "?server=vidstreaming")
         data = await url.json()
         streamSource = data.sources.find(x => x.quality === 'default')
-        player.load(streamSource.url)
+        player.load("https://hls.haikei.xyz/proxy/m3u8/" + encodeURIComponent(streamSource.url) + "?forcedHeadersProxy=%7B%22Content-Type%22%3A%22video%2FMP2T%22%7D");
     }
 }
 let zoroData2;
 defaultSourceLoad()
 document.getElementById('select-source').addEventListener('change', async function(e) {
+    destroyAniSkipButton()
     let source = e.target.value;
     let selector = document.getElementById('select-source')
     let options = selector.options
@@ -65,8 +74,7 @@ document.getElementById('select-source').addEventListener('change', async functi
         data = await url.json()
         streamSource = data.sources.find(x => x.quality === 'default')
         player.unload()
-        streamSource.url.replace('.pro', '.net')
-        player.load(streamSource.url)
+        player.load("https://hls.haikei.xyz/proxy/m3u8/" + encodeURIComponent(streamSource.url) + "?forcedHeadersProxy=%7B%22Content-Type%22%3A%22video%2FMP2T%22%7D");
         destroyAniSkipButton()
     }
     if (selectedIndex == "gogoanime (dub)") {
@@ -74,7 +82,7 @@ document.getElementById('select-source').addEventListener('change', async functi
         data = await url.json()
         streamSource = data.sources.find(x => x.quality === 'default')
         player.unload()
-        player.load(streamSource.url)
+        player.load("https://hls.haikei.xyz/proxy/m3u8/" + encodeURIComponent(streamSource.url) + "?forcedHeadersProxy=%7B%22Content-Type%22%3A%22video%2FMP2T%22%7D");
         destroyAniSkipButton()
     }
     if (selectedIndex == "zoro") {
@@ -83,11 +91,11 @@ document.getElementById('select-source').addEventListener('change', async functi
 
     }
     if (selectedIndex == "animepahe") {
-        let url = await fetch("https://api.haikei.xyz/anime/" + selectedIndex + "/info/" + source) // https://api.haikei.xyz/anime/animepahe/info/4
+        let url = await fetch("https://api.consumet.org/anime/" + selectedIndex + "/info/" + source) // https://api.haikei.xyz/anime/animepahe/info/4
         let data = await url.json()
         let paheEp = data.episodes[Number(ep) - 1]
         let paheEpId = paheEp.id
-        let url2 = await fetch("https://api.haikei.xyz/anime/" + selectedIndex + "/watch/" + paheEpId)
+        let url2 = await fetch("https://api.consumet.org/anime/" + selectedIndex + "/watch/" + paheEpId)
         data2 = await url2.json()
         console.log(data2)
         // this is what happens to a mf when there isn't an auto quality selector.
@@ -99,11 +107,7 @@ document.getElementById('select-source').addEventListener('change', async functi
         } if (streamSource == undefined) {
             streamSource = data2.sources.find(x => x.quality === '360')
         }
-        player.unload()
-        player.getNetworkingEngine().registerRequestFilter(function(type, request) {
-            console.log(request);
-            request.headers["x-referer"] = "https://kwik.cx/"
-          });  
-        player.load("https://cdn.nade.me/redirect?url=" + streamSource.url)
+        player.unload() 
+        player.load("https://hls.haikei.xyz/" + streamSource.url)
     }
 })

@@ -5,16 +5,14 @@ HaiKei is an anime streaming website that uses the [consumet](https://github.com
 [haikei.xyz](https://haikei.xyz)
 
 # What is this good for? 
-HaiKei is a streaming website that focuses on minimial loading times and an interface that is optimized for any device
+HaiKei is a streaming website that focuses on minimial loading times and an interface that is optimized for any device 🚀
 
 # Why don't I just use 9anime or another alternative?
 
-"That's because please. Please don't" - tim apple
-
-idk what are you, a cop?
+HaiKei runs faster than a good majority of alternatives, is more lightweight, and is completely open source! Unlike Zoro and 9anime.
 
 HaiKei is still very actively maintained and looking for contributors! If you know javascript, especially NodeJS and server side work, feel free to make a contribution!
 
 # Screenshots!
-![HaiKei](https://user-images.githubusercontent.com/99224452/211406382-79da313e-432f-4b6a-9364-05b5ef5f8faf.png)
+![HaiKei](https://user-images.githubusercontent.com/99224452/217099723-6d985dfc-aa0a-430f-aa44-6744e95f6fd8.png)
 ![hk_player](https://user-images.githubusercontent.com/99224452/210157881-c297bcd0-2806-43b2-b55b-e31da4187d77.png)
